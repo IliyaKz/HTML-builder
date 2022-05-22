@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const fsPromises = require('fs/promises');
 const pathDist = path.join(__dirname, 'project-dist');
@@ -10,7 +11,14 @@ async function replaceTag(data) {
   if(data.indexOf('{{') !== -1) {
     const tagStart = data.indexOf('{{');
     const tagEnd = data.indexOf('}}');
-    const dataComponent = await fsPromises.readFile(path.join(pathComponents, `${data.slice(tagStart + 2, tagEnd)}.html`), 'utf-8');
+    const filePath = path.join(pathComponents, `${data.slice(tagStart + 2, tagEnd)}.html`);
+    fs.access(filePath, fs.constants.F_OK, (error) => {
+      if (error) {
+        console.log(`Компонент ${data.slice(tagStart + 2, tagEnd)}.html не существует, сборка прервана. Проверьте корректность данных в temlate.html`);
+        process.exit();
+      }
+    });
+    const dataComponent = await fsPromises.readFile(filePath, 'utf-8');
     data = data.replace(data.slice(tagStart - 4, tagEnd + 2), dataComponent);
     replaceTag(data);
   } else {
@@ -63,9 +71,9 @@ async function buildPage() {
   try {
     await fsPromises.rm(pathDist, { recursive: true, force: true });
     await fsPromises.mkdir(pathDist, {recursive: true});
-    createHTML();
-    bundleCSS(pathStyles, path.join(pathDist, 'style.css'));
-    copyDir(path.join(__dirname, 'assets'), path.join(pathDist, 'assets'));
+    await createHTML();
+    await bundleCSS(pathStyles, path.join(pathDist, 'style.css'));
+    await copyDir(path.join(__dirname, 'assets'), path.join(pathDist, 'assets'));
   } catch (error) {
     console.error(error);
   }
