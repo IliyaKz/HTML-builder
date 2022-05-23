@@ -11,10 +11,8 @@ async function copyDir(source, copy) {
     files.forEach((file) => {
       if (file.isFile()) {
         fs.copyFile(path.join(source, file.name), path.join(copy, file.name));
-        console.log('Файл скопирован');
       } else if (file.isDirectory()) {
         copyDir(path.join(source, file.name), path.join(copy, file.name));
-        console.log('Папка скопирована');
       }
     });
   } catch (error) {
