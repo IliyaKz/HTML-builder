@@ -15,7 +15,7 @@ function write() {
       read.close();
       return;
     }
-    fs.appendFile(filePath, text, (error) => {  
+    fs.appendFile(filePath, `${text}\n`, (error) => {  
       if (error) return console.error(error.message);
     });
   });
